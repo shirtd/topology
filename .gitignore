@@ -1,0 +1,4 @@
+*.pkl
+test.py
+*.stash
+*__pycache__
