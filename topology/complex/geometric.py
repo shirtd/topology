@@ -1,16 +1,18 @@
 from topology.complex.base import Complex
 from topology.complex.cellular import DualComplex
 from topology.complex.simplicial import SimplicialComplex
-from topology.util import in_bounds, stuple, to_path
 from topology.geometry import circumcenter, circumradius
+from topology.util import in_bounds, stuple, to_path
 
-
+from tqdm import tqdm
 import diode
 
 
 class EmbeddedComplex(Complex):
+    __slots__ = Complex.__slots__ + ['P']
     def __init__(self, P):
         self.P = P
+        Complex.__init__(self, P.shape[-1])
     def get_boundary(self, bounds):
         out = {s for s in self(self.dim) if not self.in_bounds(s, bounds)}
         return {f for s in out for f in self.closure(s)}
@@ -20,14 +22,15 @@ class EmbeddedComplex(Complex):
 class DelaunayComplex(SimplicialComplex, EmbeddedComplex):
     def __init__(self, P):
         EmbeddedComplex.__init__(self, P)
-        SimplicialComplex.__init__(self, P.shape[-1])
-        for s,f in diode.fill_alpha_shapes(P, True):
+        for s,f in tqdm(diode.fill_alpha_shapes(P, True), desc='[ delaunay'):
             s = stuple(s)
-            self.add_new(s, set(self.face_it(s)), alpha=f)
+            faces = set(self.face_it(s))
+            self.add_new(s, faces, alpha=f)
     def in_bounds(self, s, bounds):
         return in_bounds(circumcenter(self.P[s]), bounds)
 
 class VoronoiComplex(DualComplex, EmbeddedComplex):
+    __slots__ = DualComplex.__slots__ + EmbeddedComplex.__slots__
     def __init__(self, K, B=set()):
         P = circumcenter(K.P[K(K.dim)])
         EmbeddedComplex.__init__(self, P)

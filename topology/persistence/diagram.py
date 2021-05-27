@@ -5,17 +5,18 @@ from tqdm import tqdm
 import numpy as np
 
 class Reduction:
+    __slots__ = ['__sequence', '__n', 'R', 'coh', 'dim',
+                    'unpairs', 'pairs', 'copairs', 'D']
     def __init__(self, K, F, R, coh):
-        self.sequence, self.n = F.get_range(R, coh), len(F) - len(R)
+        self.__sequence, self.__n = F.get_range(R, coh), len(F) - len(R)
         self.R, self.coh, self.dim = R, coh, F.dim
         self.unpairs, self.pairs, self.copairs = set(self), {}, {}
-        self.birth_trouble, self.death_trouble = {}, {}
         self.D = F.get_matrix(K, self, coh)
     def __iter__(self):
-        for seq in self.sequence:
+        for seq in self.__sequence:
             yield from seq
     def __len__(self):
-        return self.n
+        return self.__n
     def __setitem__(self, b, d):
         if self.coh:
             b, d = d, b
@@ -23,22 +24,23 @@ class Reduction:
         self.copairs[d] = b
         self.unpairs.remove(b)
         self.unpairs.remove(d)
-    def _pair(self, low):
+    def __pair(self, low):
         pairs = self.copairs if self.coh else self.pairs
         return pairs[low] if low in pairs else None
-    def _paired(self, low):
+    def __paired(self, low):
         return low is not None and low in (self.copairs if self.coh else self.pairs)
     def reduce(self, clearing=False, verbose=False, desc='[ persist'):
-        for i in (tqdm(self, total=self.n, desc=desc) if verbose else self):
-            if not (clearing and self._paired(i)):
+        for i in (tqdm(self, total=len(self), desc=desc) if verbose else self):
+            if not (clearing and self.__paired(i)):
                 low = self.D[i].get_pivot(self.R)
-                while self._paired(low):
-                    self.D[i] += self.D[self._pair(low)]
+                while self.__paired(low):
+                    self.D[i] += self.D[self.__pair(low)]
                     low = self.D[i].get_pivot(self.R)
                 if low is not None:
                     self[low] = i
 
 class Diagram(Reduction):
+    __slots__ = Reduction.__slots__ + ['diagram', 'fmap']
     def __init__(self, K, F, R=set(), coh=False, clearing=False, verbose=False):
         Reduction.__init__(self, K, F, R, coh)
         self.reduce(clearing, verbose)

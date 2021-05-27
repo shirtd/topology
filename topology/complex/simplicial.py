@@ -1,27 +1,22 @@
-from topology.complex.cellular import Cell, CellComplex
-from topology.util import stuple, diff, in_bounds
-from topology.geometry import *
+from topology.complex.base import Element, Complex
 
-from scipy.spatial import Delaunay
-import numpy.linalg as la
-import numpy as np
 import diode
 
 
-class Simplex(Cell):
+class Simplex(Element):
     def __init__(self, vertices, **data):
-        Cell.__init__(self, vertices, len(vertices)-1, **data)
+        Element.__init__(self, vertices, len(vertices)-1, **data)
+    def key(self):
+        return Element.key(self)[1]
     def __repr__(self):
         return '[%s]' % ' '.join(map(str, self))
 
-class SimplicialComplex(CellComplex):
-    def __init__(self, dim):
-        CellComplex.__init__(self, dim)
+class SimplicialComplex(Complex):
     def face_it(cls, s):
         dim = len(s)-1
         if dim:
             for i in range(dim+1):
-                yield (dim-1, s[:i]+s[i+1:])
+                yield s[:i]+s[i+1:]
     def add_new(self, s, faces, **data):
         return self.add(Simplex(s, **data), faces)
 

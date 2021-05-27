@@ -1,6 +1,7 @@
 
 
 class Column:
+    __slots__ = ['elements', 'column', 'n', 'm']
     @classmethod
     def sum(cls, *columns):
         return sum(*columns, cls())

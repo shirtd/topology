@@ -19,17 +19,19 @@ fig, ax = plt.subplots(1,2, sharex=True, sharey=True, figsize=(11,5))
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # P = np.random.rand(100,3)
-    t = np.linspace(0,1,10)
-    xs, ys, zs = np.meshgrid(t, t, t)
-    P = np.vstack((xs.flatten(), ys.flatten(), zs.flatten())).T
-    P += (2*np.random.rand(*P.shape) - 1) * 5e-3
 
-    bounds = np.array([[0, 1], [0, 1], [0, 1]])
+    BOUNDS = np.array([[0, 1], [0, 1], [0, 1]])
+    N = (10, 10, 10)
+    NOISE = 5e-1
+
+    xs, ys, zs = np.meshgrid(*(np.linspace(a,b,n) for (a,b),n in zip(BOUNDS, N)))
+    grid_points = np.vstack((xs.flatten(), ys.flatten(), zs.flatten())).T
+    random_noise = diff(BOUNDS.T) * (2*np.random.rand(*grid_points.shape) - 1) * NOISE
+    P = grid_points + random_noise
 
     A = DelaunayComplex(P)
     # B = A.get_boundary()        # (1,2)
-    B = A.get_boundary(bounds)  # (3,4)
+    B = A.get_boundary(BOUNDS)  # (3,4)
 
     F = Filtration(A, 'alpha', False)
     # R = set()                   # (1) primal absolute ~ dual relative
@@ -41,7 +43,7 @@ if __name__ == '__main__':
     C = {V.dual(s) for s in B}  # (1)
     # V = VoronoiComplex(A, B)    # (2,4)
     # C = V.get_boundary()        # (2)
-    # C = V.get_boundary(bounds)  # (3)
+    # C = V.get_boundary(BOUNDS)  # (3)
 
     G = Filtration(V, 'alpha', True)
     S = {G.index(s) for s in C} # (1,2,3)
