@@ -4,7 +4,7 @@ from topology.util import insert, partition
 
 class Filtration:
     __slots__ = ['sequence', 'dim', 'key', 'reverse', 'imap']
-    def __init__(self, K, key, reverse):
+    def __init__(self, K, key, reverse=False):
         self.sequence = K.get_sequence(key, reverse)
         self.dim, self.key, self.reverse = K.dim, key, reverse
         self.imap = {hash(s) : i for i, s in enumerate(self)}

@@ -1,7 +1,5 @@
 from topology.complex.base import Element, Complex
 
-import diode
-
 
 class Simplex(Element):
     def __init__(self, vertices, **data):

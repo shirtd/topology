@@ -1,6 +1,5 @@
 from topology.complex.base import Element, Complex
-
-from tqdm import tqdm
+from topology.util import tqit
 
 
 class Cell(Element):
@@ -12,17 +11,14 @@ class CellComplex(Complex):
         return self.add(Cell(c, dim, **data), faces)
 
 class DualComplex(CellComplex):
-    def __init__(self, K, B):
+    def __init__(self, K, B, verbose=False, desc='[ voronoi'):
         CellComplex.__init__(self, K.dim)
         self.__dmap, self.__pmap = {}, {}
         self.__imap = {t : i for i,t in enumerate(K(K.dim))}
-        tq = tqdm(total=len(K), desc='[ voronoi')
-        for dim in reversed(range(self.dim+1)):
-            for s in K(dim):
-                if not s in B:
-                    self.add_dual(K, s)
-                tq.update(1)
-        tq.close()
+        it = (s for d in reversed(range(self.dim+1)) for s in K(d))
+        for s in tqit(it, verbose, desc, len(K)):
+            if not s in B:
+                self.add_dual(K, s)
     def get_vertices(self, K, s):
         if s.dim < 3:
             return {v for f in K.cofaces(s) for v in self.get_vertices(K, f)}

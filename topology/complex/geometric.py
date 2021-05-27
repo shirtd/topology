@@ -2,9 +2,8 @@ from topology.complex.base import Complex
 from topology.complex.cellular import DualComplex
 from topology.complex.simplicial import SimplicialComplex
 from topology.geometry import circumcenter, circumradius
-from topology.util import in_bounds, stuple, to_path
+from topology.util import in_bounds, stuple, to_path, tqit
 
-from tqdm import tqdm
 import diode
 
 
@@ -20,9 +19,9 @@ class EmbeddedComplex(Complex):
         pass
 
 class DelaunayComplex(SimplicialComplex, EmbeddedComplex):
-    def __init__(self, P):
+    def __init__(self, P, verbose=False, desc='[ delaunay'):
         EmbeddedComplex.__init__(self, P)
-        for s,f in tqdm(diode.fill_alpha_shapes(P, True), desc='[ delaunay'):
+        for s,f in tqit(diode.fill_alpha_shapes(P, True), verbose, desc):
             s = stuple(s)
             faces = set(self.face_it(s))
             self.add_new(s, faces, alpha=f)
@@ -31,10 +30,10 @@ class DelaunayComplex(SimplicialComplex, EmbeddedComplex):
 
 class VoronoiComplex(DualComplex, EmbeddedComplex):
     __slots__ = DualComplex.__slots__ + EmbeddedComplex.__slots__
-    def __init__(self, K, B=set()):
+    def __init__(self, K, B=set(), verbose=False):
         P = circumcenter(K.P[K(K.dim)])
         EmbeddedComplex.__init__(self, P)
-        DualComplex.__init__(self, K, B)
+        DualComplex.__init__(self, K, B, verbose)
         self.nbrs = {i : set() for i,_ in enumerate(self(0))}
         for e in self(1):
             if len(e) == 2:

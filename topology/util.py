@@ -2,10 +2,14 @@ from functools import partial, reduce
 from itertools import combinations
 from multiprocessing import Pool
 import numpy.linalg as la
+from tqdm import tqdm
 import pickle as pkl
 import numpy as np
 import sys, time, gc
 
+
+def tqit(it, verbose=False, desc=None, n=None):
+    return tqdm(it, desc=desc, total=n) if verbose else it
 
 def load(fcache):
     sys.stdout.write('[ loading %s...' % fcache)
