@@ -11,14 +11,6 @@ import diode
 class Simplex(Cell):
     def __init__(self, vertices, **data):
         Cell.__init__(self, vertices, len(vertices)-1, **data)
-    def astuple(self):
-        return self.vertices
-    def __lt__(self, other):
-        if not isinstance(other, tuple):
-            other = (other.dim, other.astuple())
-        else:
-            other = (len(other)-1, other)
-        return (self.dim, self.astuple()) < other
     def __repr__(self):
         return '[%s]' % ' '.join(map(str, self))
 
@@ -29,25 +21,9 @@ class SimplicialComplex(CellComplex):
         dim = len(s)-1
         if dim:
             for i in range(dim+1):
-                yield s[:i]+s[i+1:]
+                yield (dim-1, s[:i]+s[i+1:])
     def add_new(self, s, faces, **data):
         return self.add(Simplex(s, **data), faces)
-
-class DelaunayComplex(SimplicialComplex):
-    def __init__(self, P):
-        SimplicialComplex.__init__(self, P.shape[-1])
-        self.P = P
-        for s,f in diode.fill_alpha_shapes(P, True):
-            s = stuple(s)
-            self.add_new(s, set(self.face_it(s)), alpha=f)
-    def in_bounds(self, s, bounds):
-        return in_bounds(tet_circumcenter(self.P[list(s)]), bounds)
-    # def get_alpha(self, s):
-    #     dim, p = len(s)-1, self.P[list(s)]
-    #     return (tet_circumradius(p) if dim == 3
-    #         else tri_circumradius(p) if dim == 2
-    #         else la.norm(diff(p))if dim == 1
-    #         else 0) / 4
 
 # class DelaunayComplex(SimplicialComplex):
 #     def __init__(self, P):

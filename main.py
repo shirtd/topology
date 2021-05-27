@@ -1,5 +1,6 @@
 from topology.complex.simplicial import *
 from topology.complex.cellular import *
+from topology.complex.geometric import *
 
 from topology.persistence.filtration import *
 from topology.persistence.diagram import *
